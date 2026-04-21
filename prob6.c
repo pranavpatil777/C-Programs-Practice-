@@ -13,22 +13,36 @@
 // Maintain a free list
 // Return pointer to usable memory
 
+// My current challenge 🎯 
+// 1) add padding to memory
+// 2) add metadata 
+
 #include <stdio.h>
 
 static char heap[1024];
 static char* ptr = heap; //pointer points to end of the heap 
 
+struct block{
+    struct block* next;
+    size_t size;
+    int free;
+};
+
 void* my_malloc(size_t size){
-    if(ptr + size > heap + sizeof(heap)){
+    size = (size + 7) & ~7;
+    if(ptr + sizeof(struct block) + size > heap + sizeof(heap)){
         return NULL;
     }
-    char* s_ptr = ptr;
-    ptr += size;
+    struct block* ptr1 = (struct block*)ptr;
+    ptr1 -> size = size;
+    ptr1 -> free = 0;
+    void* s_ptr = ptr + (sizeof(struct block));
+    ptr += sizeof(struct block) + size;
+    ptr1 -> next = (struct block*)ptr;
     return s_ptr;
 }
 
 int main(){
-    printf("%p\n", heap);
     void* p1 = my_malloc(10);
     void* p2 = my_malloc(20);
     printf("%p\n", p1);
