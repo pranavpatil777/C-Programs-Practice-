@@ -68,6 +68,10 @@ void* my_malloc(size_t size){
     ptr1 -> free = 0;
     void* s_ptr = ptr + (sizeof(struct block));
     ptr += sizeof(struct block) + size;
+<<<<<<< HEAD
+=======
+    ptr1 -> next = NULL;
+>>>>>>> 3405e3b1ed2dd6fd5ed95fc17aa16789f8bc9fde
     return s_ptr;
 }
 
