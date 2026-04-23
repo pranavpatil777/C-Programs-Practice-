@@ -21,30 +21,44 @@
 // Goal: Before allocating new memory:
 // 👉 Search existing blocks
 
-#include <stdio.h>
+// 🔥 Challenge #9: Coalescing Free Blocks
+// ❗ Goal: When freeing:
+//    [free][free] → merge → [bigger free block]
 
+#include <stdio.h>
 
 static char heap[1024];
 static char* ptr = heap; //pointer points to end of the heap 
 
 struct block{
     size_t size;
+    struct block* next;
     int free;
 };
 
-void* traverse_heap(size_t size){
+void* reuse_block(size_t size){
     struct block* block = (struct block*)heap;
-    while ((char*)block < ptr){
-       if(block->free == 1 && block->size >= size){
-           block->free = 0; //we are using the block now
 
-           return (char*)block + sizeof(struct block);
-       }
-       //Traversel
-       block = (struct block*)((char*)block + sizeof(struct block) + block->size);
-       //OR, we can do it like This 👇 
-       // block = block->next;
+    while ((char*)block < ptr){
+        if(block->free && block->size >= size){
+
+            // Split if enough space
+            if(block->size >= size + sizeof(struct block) + 8){
+                struct block* temp = (struct block*)((char*)block + sizeof(struct block) + size);
+
+                temp->size = block->size - size - sizeof(struct block);
+                temp->free = 1;
+
+                block->size = size;
+            }
+
+            block->free = 0;
+            return (char*)block + sizeof(struct block);
+        }
+
+        block = (struct block*)((char*)block + sizeof(struct block) + block->size);
     }
+
     return NULL;
 }
 
@@ -56,7 +70,7 @@ void my_free(void* ptr_data){
 
 void* my_malloc(size_t size){
     size = (size + 7) & ~7;
-    void* temp = traverse_heap(size);
+    void* temp = reuse_block(size);
     if(temp != NULL){
         return temp;
     }
@@ -68,6 +82,7 @@ void* my_malloc(size_t size){
     ptr1 -> free = 0;
     void* s_ptr = ptr + (sizeof(struct block));
     ptr += sizeof(struct block) + size;
+    ptr1->next = (struct block*)ptr;
     return s_ptr;
 }
 
