@@ -37,21 +37,15 @@ pair<int, int> twoSum(vector<int>& arr, int n, int k){
 
 //optimal solution
 pair<int,int> twoSum2(vector<int>& arr, int target){
-
-    unordered_map<int,int> mp;
-
+    int cs = 0;
     for(int i = 0; i < arr.size(); i++){
 
         int needed = target - arr[i];
-
-        // if needed number already exists
-        if(mp.find(needed) != mp.end()){
-
-            return {mp[needed], i};
+        for(size_t j=i+1; j < arr.size(); j++){
+            if(arr[j] == needed){
+                return {i , j};
+            }
         }
-
-        // store current number with index
-        mp[arr[i]] = i;
     }
 
     return {-1,-1};
